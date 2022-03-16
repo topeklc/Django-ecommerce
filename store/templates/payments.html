@@ -1,0 +1,10 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<!-- templates/payment.html -->
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p><input type="submit" value="Proceed" /></p>
+</form>
+{% endblock content %}
