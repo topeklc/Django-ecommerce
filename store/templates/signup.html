@@ -1,18 +1,31 @@
 {% extends 'main.html' %}
 {% block content %}
-<!-- Breadcrumb Start -->
+<!-- Messages Start -->
 <div class="breadcrumb-wrap">
     <div class="container-fluid">
+        {% if messages %}
+        {% for message in messages %}
         <ul class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item"><a href="#">Products</a></li>
-            <li class="breadcrumb-item active">Login & Register</li>
+            <li >{{ message }}</li>
+            {% endfor %}
         </ul>
+        {% endif %}
+        {% if form.errors %}
+        {% for field in form %}
+        {% for error in field.errors %}
+        <div class="col-md-12">
+        
+            --{{error}}
+        
+        </div>
+        {% endfor %}
+        {% endfor %}
+        {% endif %}
     </div>
 </div>
-<!-- Breadcrumb End -->
+<!-- Messages End -->
 
-<!-- Login Start -->
+<!-- Signup Start -->
 <div class="login">
     <div class="container-fluid">
         <div class="row">
@@ -21,11 +34,11 @@
                     <div class="row">
                         <form action="" , method="POST">
                             {% csrf_token %}
-                            {% for field in signup_form %}
-                            <!-- <div class="col-md-6"> -->
+                            {% for field in form %}
+                            <div class="col-md-12">
                             <label>{{ field.label }}</label>
                             {{ field }}
-                            <!-- </div> -->
+                            </div>
                             {% endfor %}
                             <div class="col-md-12">
                                 <button class="btn">Submit</button>
@@ -34,7 +47,7 @@
                 </div>
             </div>
         </div></div></div>
-<!-- Login End -->
+<!-- Signup End -->
 <!-- Back to Top -->
 <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
 {% endblock content %}

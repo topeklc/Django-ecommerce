@@ -18,10 +18,11 @@ from django.urls import path, include
 from store import views
 
 urlpatterns = [
-    path("", views.index),
+    path("", views.index, name="index"),
     path("admin/", admin.site.urls),
     path("payments/", views.create_payment),
     path("payments/payment-details/<int:payment_id>", views.payment_details),
-    path("login/", views.login, name="login"),
+    path("login/", views.login_user, name="login"),
     path("signup/", views.signup, name="signup"),
+    path("logout/", views.logout_user, name="logout"),
 ]

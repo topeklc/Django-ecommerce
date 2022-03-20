@@ -2,9 +2,11 @@ from curses.ascii import SI
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from payments import get_payment_model, RedirectNeeded
-
-from .forms import PaymentForm, SignUpForm
+from .models import User
+from .forms import LoginForm, PaymentForm, SignUpForm
 
 
 def index(request):
@@ -12,9 +14,32 @@ def index(request):
     return render(request, "index.html", content)
 
 
-def login(request):
-    context = {}
+def login_user(request):
+    form = LoginForm()
+    if request.user.is_authenticated:
+        redirect("index")
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        try:
+            user = User.objects.get(username=username)
+        except:
+            messages.error(request, "Username does not exist.")
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return redirect("index")
+        else:
+            messages.error(request, "Wrong password.")
+
+    context = {"form": form}
     return render(request, "login.html", context)
+
+
+def logout_user(request):
+    logout(request)
+    messages.info(request, "User was logged out!")
+    return redirect("login")
 
 
 def signup(request):
@@ -22,15 +47,18 @@ def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            print("valid!")
             user = form.save(commit=False)
             user.username = user.username.lower()
             user.first_name = user.first_name.title()
-            user.first_name = user.first_name.title()
+            user.last_name = user.last_name.title()
             user.save()
-            # login()
+            messages.success(request, "User account was created!")
+            login(request, username=user.username, password=user.password)
+        else:
+            print(form.error_messages)
+            messages.error(request, "An error has occured during registration: ")
 
-    context = {"signup_form": form}
+    context = {"form": form}
     return render(request, "signup.html", context)
 
 
