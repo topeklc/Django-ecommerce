@@ -10,7 +10,7 @@ from decimal import Decimal
 
 
 def get_image_path(instance, filename):
-    return os.path.join("static", "photos", str(instance.brand_name), filename)
+    return os.path.join("static", "photos", str(instance.product.brand_name), filename)
 
 
 class AvailableCountries(Countries):
@@ -47,17 +47,31 @@ class Product(models.Model):
     name = models.CharField(max_length=50)
     price = models.FloatField()
     discount = models.IntegerField(blank=True, null=True)
+    discounted_price = models.FloatField(default=price)
     category = models.ManyToManyField(Category)
     brand_name = models.CharField(max_length=50)
     url = models.SlugField()
     short_description = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField()
-    image = models.ImageField(upload_to=get_image_path)
     is_featured = models.BooleanField(default=False)
     date = models.DateField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if self.discount > 0:
+            self.discounted_price = self.price * (1 - self.discount / 100)
+        else:
+            self.discounted_price = self.price
+        super(Product, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, related_name="images", on_delete=models.CASCADE
+    )
+    image = models.ImageField(upload_to=get_image_path)
 
 
 class OrderProduct(models.Model):
@@ -67,9 +81,7 @@ class OrderProduct(models.Model):
     order_sum = models.FloatField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.order_sum = (
-            self.quantity * self.product.price * (1 - self.product.discount / 100)
-        )
+        self.order_sum = self.quantity * self.product.discounted_price
         super(OrderProduct, self).save(*args, **kwargs)
 
 

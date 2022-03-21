@@ -4,9 +4,10 @@ from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from flask_login import login_required
 from payments import get_payment_model, RedirectNeeded
-from .models import User
-from .forms import LoginForm, PaymentForm, SignUpForm
+from .models import User, Product
+from .forms import LoginForm, PaymentForm, SignUpForm, AddressForm
 
 
 def index(request):
@@ -62,6 +63,22 @@ def signup(request):
     return render(request, "signup.html", context)
 
 
+# @login_required
+def user_address(request):
+    form = AddressForm()
+    if request.method == "POST":
+        form = AddressForm(request.POST)
+        user = request.user
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.user = user
+            form.save()
+            return redirect("index")
+    context = {"form": form}
+
+    return render(request, "address.html", context)
+
+
 def payment_details(request, payment_id):
     payment = get_object_or_404(get_payment_model(), id=payment_id)
     try:
@@ -79,3 +96,12 @@ def create_payment(request):
         return redirect(f"payment-details/{p.id}")
     content = {"form": form}
     return render(request, "payments.html", content)
+
+
+def product_detail(request, pk):
+    product = Product.objects.get(id=pk)
+    images = product.images.all()
+    images = ["/".join(str(image.image).split("/")[1:]) for image in images]
+    context = {"product": product, "images": images}
+
+    return render(request, "product-detail.html", context)

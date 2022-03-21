@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from payments import get_payment_model
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
+from .models import Address
+
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -52,3 +54,10 @@ class PaymentForm(forms.ModelForm):
     class Meta:
         model = get_payment_model()
         fields = ["variant", "total"]
+
+
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        exclude = ["user"]
+        # fields = "__all__"
