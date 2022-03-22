@@ -3,6 +3,7 @@ import os
 from django.db import models
 from django.contrib.auth.models import User
 from django_countries.fields import CountryField, Countries
+from django.core.validators import MaxValueValidator, MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from payments.models import BasePayment
 from payments import PurchasedItem
@@ -72,6 +73,18 @@ class ProductImage(models.Model):
         Product, related_name="images", on_delete=models.CASCADE
     )
     image = models.ImageField(upload_to=get_image_path)
+
+
+class ProductReview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    review_text = models.TextField()
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+
+    class Meta:
+        unique_together = [["user", "product"]]
 
 
 class OrderProduct(models.Model):

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from payments import get_payment_model
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-from .models import Address
+from .models import Address, ProductReview
 
 
 class SignUpForm(UserCreationForm):
@@ -60,4 +60,9 @@ class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
         exclude = ["user"]
-        # fields = "__all__"
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = ProductReview
+        fields = ["review_text", "rating"]

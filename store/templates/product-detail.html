@@ -2,17 +2,30 @@
 {% extends 'main.html' %}  
         {% load static %}
         {% block content %}
-        <!-- Breadcrumb Start -->
+        <!-- Messages Start -->
         <div class="breadcrumb-wrap">
             <div class="container-fluid">
+                {% if messages %}
+                {% for message in messages %}
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item"><a href="#">Products</a></li>
-                    <li class="breadcrumb-item active">Product Detail</li>
+                    <li>{{ message }}</li>
+                    {% endfor %}
                 </ul>
+                {% endif %}
+                {% if form.errors %}
+                {% for field in form %}
+                {% for error in field.errors %}
+                <div class="col-md-12">
+        
+                    --{{error}}
+        
+                </div>
+                {% endfor %}
+                {% endfor %}
+                {% endif %}
             </div>
         </div>
-        <!-- Breadcrumb End -->
+        <!-- Messages End -->
         
         <!-- Product Detail Start -->
         <div class="product-detail">
@@ -127,27 +140,35 @@
                                             </p>
                                         </div>
                                         <div class="reviews-submit">
+                                            {% if user.is_authenticated %}
                                             <h4>Give your Review:</h4>
-                                            <div class="ratting">
+                                            <form action="" method="POST">
+                                            {% csrf_token %}
+                                            {% for field in form %}
+                                            {{ field.label }}<br>
+                                            {{ field }}<br>
+                                            <!-- <div class="ratting">
                                                 <i class="far fa-star"></i>
                                                 <i class="far fa-star"></i>
                                                 <i class="far fa-star"></i>
                                                 <i class="far fa-star"></i>
                                                 <i class="far fa-star"></i>
-                                            </div>
+                                            </div> 
+                    
                                             <div class="row form">
+                                                
                                                 <div class="col-sm-6">
-                                                    <input type="text" placeholder="Name">
+                                                    {{ user }}
                                                 </div>
-                                                <div class="col-sm-6">
-                                                    <input type="email" placeholder="Email">
-                                                </div>
+                                                
                                                 <div class="col-sm-12">
                                                     <textarea placeholder="Review"></textarea>
-                                                </div>
+                                                </div>-->
+                                                {% endfor %}
                                                 <div class="col-sm-12">
-                                                    <button>Submit</button>
-                                                </div>
+                                                    <button class="btn">Submit</button>
+                                                </div></form>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>

@@ -18,6 +18,7 @@ admin.site.register(Address)
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(OrderProduct)
+admin.site.register(ProductReview)
 admin.site.register(Order)
 admin.site.register(Category)
 admin.site.register(Payment)

@@ -6,8 +6,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from flask_login import login_required
 from payments import get_payment_model, RedirectNeeded
-from .models import User, Product
-from .forms import LoginForm, PaymentForm, SignUpForm, AddressForm
+from .models import User, Product, ProductReview
+from .forms import LoginForm, PaymentForm, ReviewForm, SignUpForm, AddressForm
 
 
 def index(request):
@@ -56,7 +56,6 @@ def signup(request):
             messages.success(request, "User account was created!")
             login(request, username=user.username, password=user.password)
         else:
-            print(form.error_messages)
             messages.error(request, "An error has occured during registration: ")
 
     context = {"form": form}
@@ -102,6 +101,20 @@ def product_detail(request, pk):
     product = Product.objects.get(id=pk)
     images = product.images.all()
     images = ["/".join(str(image.image).split("/")[1:]) for image in images]
-    context = {"product": product, "images": images}
-
+    form = ReviewForm()
+    context = {"product": product, "images": images, "form": form}
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        user = request.user
+        if ProductReview.objects.filter(user=user):
+            messages.error(
+                request, "Review already added! You can add only one review."
+            )
+            return redirect(product_detail, pk=product.id)
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.user = user
+            form.product = product
+            form.save()
+            return render(request, "product-detail.html", context)
     return render(request, "product-detail.html", context)
