@@ -164,11 +164,9 @@ def checkout(request):
     address_form = AddressForm()
     user = request.user
     address = Address.objects.filter(user=user).get()
-    fields = [key_value for key_value in address.__dict__.items()][3:-2]
     context = {
         "address_form": address_form,
         "user": user,
         "address": address,
-        "fields": fields,
     }
     return render(request, "checkout.html", context=context)

@@ -30,7 +30,7 @@ class Address(models.Model):
     zip_code = models.CharField(max_length=10)
     country = CountryField(countries=AvailableCountries)
     is_shipping = models.BooleanField(default=False)
-    is_billing = models.BooleanField(default=False)
+    is_billing = models.BooleanField(default=True)
 
     class Meta:
         verbose_name_plural = "Addresses"
