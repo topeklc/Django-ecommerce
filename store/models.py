@@ -20,6 +20,9 @@ class AvailableCountries(Countries):
 
 class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(max_length=60, blank=True, null=True)
     phone = PhoneNumberField(blank=True, null=True)
     city = models.CharField(max_length=100)
     street = models.CharField(max_length=100)
@@ -55,7 +58,16 @@ class Product(models.Model):
     short_description = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField()
     is_featured = models.BooleanField(default=False)
+    overall_rating = models.FloatField(default=1, null=True, blank=True)
     date = models.DateField(auto_now_add=True)
+
+    def get_overall_rating(self):
+        reviews = ProductReview.objects.filter(product=self.id)
+        print(reviews)
+        ratings = [rating.rating for rating in reviews]
+        print(ratings)
+        print(sum(ratings) / len(ratings))
+        return sum(ratings) / len(ratings)
 
     def save(self, *args, **kwargs):
         if self.discount > 0:
@@ -82,6 +94,7 @@ class ProductReview(models.Model):
     rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
+    date = models.DateField(auto_now_add=True)
 
     class Meta:
         unique_together = [["user", "product"]]
@@ -90,11 +103,11 @@ class ProductReview(models.Model):
 class OrderProduct(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.FloatField(default=1)
+    quantity = models.IntegerField(default=1)
     order_sum = models.FloatField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.order_sum = self.quantity * self.product.discounted_price
+        self.order_sum = int(self.quantity) * self.product.discounted_price
         super(OrderProduct, self).save(*args, **kwargs)
 
 

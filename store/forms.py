@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from payments import get_payment_model
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-from .models import Address, ProductReview
+from .models import Address, Order, ProductReview, OrderProduct
 
 
 class SignUpForm(UserCreationForm):
@@ -59,10 +59,22 @@ class PaymentForm(forms.ModelForm):
 class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
-        exclude = ["user"]
+        exclude = ["user", "first_name", "last_name", "email"]
 
 
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = ProductReview
         fields = ["review_text", "rating"]
+
+
+class OrderProductForm(forms.ModelForm):
+    class Meta:
+        model = OrderProduct
+        fields = ["quantity"]
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = "__all__"

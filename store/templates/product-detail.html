@@ -1,6 +1,7 @@
 
 {% extends 'main.html' %}  
         {% load static %}
+        {% load filters %}
         {% block content %}
         <!-- Messages Start -->
         <div class="breadcrumb-wrap">
@@ -50,11 +51,9 @@
                                     <div class="product-content">
                                         <div class="title"><h2>{{ product.name }}</h2></div>
                                         <div class="ratting">
+                                            {% for _ in overall_rating %}
                                             <i class="fa fa-star"></i>
-                                            <i class="fa fa-star"></i>
-                                            <i class="fa fa-star"></i>
-                                            <i class="fa fa-star"></i>
-                                            <i class="fa fa-star"></i>
+                                            {% endfor %}
                                         </div>
                                         <div class="price">
                                             <h4>Price:</h4>
@@ -62,14 +61,17 @@
                                         </div>
                                         <div class="quantity">
                                             <h4>Quantity:</h4>
-                                            <div class="qty">
+                                            <form action="" method="POST">
+                                            {% csrf_token %}
+                                                <div class="qty">
+                    
                                                 <button class="btn-minus"><i class="fa fa-minus"></i></button>
-                                                <input type="text" value="1">
+                                                <input type="number" name="quantity" value=1>
                                                 <button class="btn-plus"><i class="fa fa-plus"></i></button>
                                             </div>
                                         </div>
                                         <div class="p-size">
-                                            <h4>Size:</h4>
+                                            <!-- <h4>Size:</h4>
                                             <div class="btn-group btn-group-sm">
                                                 <button type="button" class="btn">S</button>
                                                 <button type="button" class="btn">M</button>
@@ -83,12 +85,13 @@
                                                 <button type="button" class="btn">White</button>
                                                 <button type="button" class="btn">Black</button>
                                                 <button type="button" class="btn">Blue</button>
-                                            </div> 
+                                            </div>  -->
                                         </div>
                                         <div class="action">
-                                            <a class="btn" href="#"><i class="fa fa-shopping-cart"></i>Add to Cart</a>
-                                            <a class="btn" href="#"><i class="fa fa-shopping-bag"></i>Buy Now</a>
-                                        </div>
+                                            <button class="btn" name="add_to_cart"><i class="fa fa-shopping-cart"></i>Add to Cart</button>
+                                            <button class="btn" name="checkout"><i class="fa fa-shopping-bag"></i>Buy Now</button>
+                                            
+                                        </div></form>
                                     </div>
                                 </div>
                             </div>
@@ -104,7 +107,7 @@
                                         <a class="nav-link" data-toggle="pill" href="#specification">Specification</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" data-toggle="pill" href="#reviews">Reviews (1)</a>
+                                        <a class="nav-link" data-toggle="pill" href="#reviews">Reviews ({{ reviews|length }})</a>
                                     </li>
                                 </ul>
 
@@ -112,7 +115,7 @@
                                     <div id="description" class="container tab-pane active">
                                         <h4>Product description</h4>
                                         <p>
-                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In condimentum quam ac mi viverra dictum. In efficitur ipsum diam, at dignissim lorem tempor in. Vivamus tempor hendrerit finibus. Nulla tristique viverra nisl, sit amet bibendum ante suscipit non. Praesent in faucibus tellus, sed gravida lacus. Vivamus eu diam eros. Aliquam et sapien eget arcu rhoncus scelerisque. Suspendisse sit amet neque neque. Praesent suscipit et magna eu iaculis. Donec arcu libero, commodo ac est a, malesuada finibus dolor. Aenean in ex eu velit semper fermentum. In leo dui, aliquet sit amet eleifend sit amet, varius in turpis. Maecenas fermentum ut ligula at consectetur. Nullam et tortor leo. 
+                                            {{ product.description }}
                                         </p>
                                     </div>
                                     <div id="specification" class="container tab-pane fade">
@@ -126,19 +129,20 @@
                                         </ul>
                                     </div>
                                     <div id="reviews" class="container tab-pane fade">
+                                        {% for review in reviews %}
                                         <div class="reviews-submitted">
-                                            <div class="reviewer">Phasellus Gravida - <span>01 Jan 2020</span></div>
+                                            <div class="reviewer">{{ review.user.first_name }} <span>{{ review.date }} </span></div>
                                             <div class="ratting">
+                                                {% for _ in review.rating|times %}
+                                                
                                                 <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
+                                                {% endfor %}
                                             </div>
                                             <p>
-                                                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.
+                                                {{review.review_text}}
                                             </p>
                                         </div>
+                                        {% endfor %}
                                         <div class="reviews-submit">
                                             {% if user.is_authenticated %}
                                             <h4>Give your Review:</h4>
@@ -166,7 +170,7 @@
                                                 </div>-->
                                                 {% endfor %}
                                                 <div class="col-sm-12">
-                                                    <button class="btn">Submit</button>
+                                                    <button class="btn" name="post_review">Submit</button>
                                                 </div></form>
                                                 {% endif %}
                                             </div>

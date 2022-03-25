@@ -27,4 +27,5 @@ urlpatterns = [
     path("logout/", views.logout_user, name="logout"),
     path("address/", views.user_address, name="address"),
     path("product/<str:pk>/", views.product_detail, name="product-detail"),
+    path("checkout/", views.checkout, name="checkout"),
 ]

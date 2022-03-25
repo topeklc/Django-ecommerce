@@ -1,18 +1,52 @@
-from curses.ascii import SI
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from flask_login import login_required
+from django.core import serializers
 from payments import get_payment_model, RedirectNeeded
-from .models import User, Product, ProductReview
-from .forms import LoginForm, PaymentForm, ReviewForm, SignUpForm, AddressForm
+from .models import User, Product, ProductReview, Address
+from .forms import (
+    LoginForm,
+    OrderProductForm,
+    PaymentForm,
+    ReviewForm,
+    SignUpForm,
+    AddressForm,
+)
+
+
+def post_review(request, product: Product, context: dict):
+    form = ReviewForm(request.POST)
+    user = request.user
+    if ProductReview.objects.filter(user=user):
+        messages.error(request, "Review already added! You can add only one review.")
+        return redirect(product_detail, pk=product.id)
+    if form.is_valid():
+        form = form.save(commit=False)
+        form.user = user
+        form.product = product
+        form.save()
+        product.overall_rating = product.get_overall_rating()
+        product.save()
+        return render(request, "product-detail.html", context)
+
+
+def add_to_cart(request, product: Product):
+    form = OrderProductForm(request.POST)
+    user = request.user
+    if form.is_valid():
+        form = form.save(commit=False)
+
+        form.user = user
+        form.product = product
+        form.quantity = request.POST.get("quantity")
+        form.save()
 
 
 def index(request):
-    content = {}
-    return render(request, "index.html", content)
+    context = {}
+    return render(request, "index.html", context)
 
 
 def login_user(request):
@@ -28,7 +62,7 @@ def login_user(request):
             messages.error(request, "Username does not exist.")
         user = authenticate(request, username=username, password=password)
         if user:
-            login(request, user)
+            login(request, user=user)
             return redirect("index")
         else:
             messages.error(request, "Wrong password.")
@@ -71,6 +105,9 @@ def user_address(request):
         if form.is_valid():
             form = form.save(commit=False)
             form.user = user
+            form.first_name = user.first_name
+            form.last_name = user.last_name
+            form.email = user.email
             form.save()
             return redirect("index")
     context = {"form": form}
@@ -102,19 +139,36 @@ def product_detail(request, pk):
     images = product.images.all()
     images = ["/".join(str(image.image).split("/")[1:]) for image in images]
     form = ReviewForm()
-    context = {"product": product, "images": images, "form": form}
+    reviews = ProductReview.objects.filter(product=product).all()
+    overall_rating = range(int(product.overall_rating))
+    context = {
+        "product": product,
+        "images": images,
+        "form": form,
+        "reviews": reviews,
+        "overall_rating": overall_rating,
+    }
     if request.method == "POST":
-        form = ReviewForm(request.POST)
-        user = request.user
-        if ProductReview.objects.filter(user=user):
-            messages.error(
-                request, "Review already added! You can add only one review."
-            )
-            return redirect(product_detail, pk=product.id)
-        if form.is_valid():
-            form = form.save(commit=False)
-            form.user = user
-            form.product = product
-            form.save()
+        if "post_review" in request.POST:
+            post_review(request, product, context)
+        if "add_to_cart" in request.POST:
+            add_to_cart(request, product)
             return render(request, "product-detail.html", context)
+        if "checkout" in request.POST:
+            add_to_cart(request, product)
+            return redirect("checkout")
     return render(request, "product-detail.html", context)
+
+
+def checkout(request):
+    address_form = AddressForm()
+    user = request.user
+    address = Address.objects.filter(user=user).get()
+    fields = [key_value for key_value in address.__dict__.items()][3:-2]
+    context = {
+        "address_form": address_form,
+        "user": user,
+        "address": address,
+        "fields": fields,
+    }
+    return render(request, "checkout.html", context=context)
